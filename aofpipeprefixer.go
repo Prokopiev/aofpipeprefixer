@@ -24,9 +24,6 @@ func main() {
 			continue
 		}
 		if op1.Key != "" {
-			if op1.Key == "sf_prof_index" {
-				continue
-			}
 			op1.Key = currentDatabase + ":" + op1.Key
 		}
 		//Databases are not supported - dangerous commands
