@@ -16,7 +16,6 @@ func main() {
 				break
 			}
 			panic(err)
-			break
 		}
 		if op1.Command == "SELECT" {
 			currentDatabase = op1.Arguments[0]
