@@ -1,13 +1,38 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/Prokopiev/aof"
 	"io"
 	"os"
+	"strings"
 )
 
+// Create a new type for a list of Strings
+type stringList []string
+
+// Implement the flag.Value interface
+func (s *stringList) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+func (s *stringList) Set(value string) error {
+	*s = strings.Split(value, ",")
+	return nil
+}
+
+var baseList stringList
+
 func main() {
-	var currentDatabase = "0"
+	if len(os.Args) < 2 {
+		fmt.Println("list of bases is required")
+		os.Exit(1)
+	}
+
+	flag.Var(&baseList, "bases", "Comma separated list of bases (required)")
+	flag.Parse()
+
 	reader := aof.NewBufioReader(os.Stdin)
 	for {
 		op1, err := reader.ReadOperation()
@@ -17,13 +42,16 @@ func main() {
 			}
 			panic(err)
 		}
-		if op1.Command == "SELECT" {
-			currentDatabase = op1.Arguments[0]
-			//Databases are not supported - skipping command
-			continue
+		valid := false
+		for _, element := range baseList {
+			if strings.HasPrefix(op1.Key, element+":") {
+				valid = true
+				break
+			}
 		}
-		if op1.Key != "" {
-			op1.Key = currentDatabase + ":" + op1.Key
+
+		if !valid {
+			continue
 		}
 		//Databases are not supported - dangerous commands
 		if op1.Command == "FLUSHDB" || op1.Command == "FLUSHALL" {
